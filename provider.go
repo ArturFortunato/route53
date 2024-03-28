@@ -2,6 +2,7 @@ package route53
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	r53 "github.com/aws/aws-sdk-go-v2/service/route53"
@@ -41,17 +42,21 @@ func (p *Provider) GetRecords(ctx context.Context, zone string) ([]libdns.Record
 // AppendRecords adds records to the zone. It returns the records that were added.
 func (p *Provider) AppendRecords(ctx context.Context, zone string, records []libdns.Record) ([]libdns.Record, error) {
 	p.init(ctx)
+	fmt.Println("Appending records for zone: ", zone)
 
 	zoneID, err := p.getZoneID(ctx, zone)
 	if err != nil {
+		fmt.Println("Failed to get zone ID", err)
 		return nil, err
 	}
 
 	var createdRecords []libdns.Record
 
 	for _, record := range records {
+		fmt.Println("Creating record: ", record.ID, record.Name, record.Value)
 		newRecord, err := p.createRecord(ctx, zoneID, record, zone)
 		if err != nil {
+			fmt.Println("Failed to create record", err)
 			return nil, err
 		}
 		createdRecords = append(createdRecords, newRecord)
